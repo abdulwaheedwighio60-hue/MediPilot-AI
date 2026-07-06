@@ -15,7 +15,11 @@ class ActionMenuTile extends StatelessWidget {
     this.iconBorderColor,
     this.trailingIcon = CupertinoIcons.right_chevron,
     this.isLoading = false,
-    this.isEnabled = true, this.splashColor, this.highlightColor,
+    this.isEnabled = true,
+    this.splashColor,
+    this.highlightColor,
+    this.backgroundColor,
+    this.borderColor,
 
   });
 
@@ -33,6 +37,8 @@ class ActionMenuTile extends StatelessWidget {
   final bool isEnabled;
   final Color? splashColor;
   final Color? highlightColor;
+  final Color? backgroundColor;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +49,7 @@ class ActionMenuTile extends StatelessWidget {
     return Opacity(
       opacity: isEnabled ? 1 : 0.55,
       child: Material(
-        color: AppColors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
         child: InkWell(
           onTap: isEnabled && !isLoading ? onTap : null,
@@ -57,10 +63,10 @@ class ActionMenuTile extends StatelessWidget {
               vertical: 15.h,
             ),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: backgroundColor,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: AppColors.borderColor,
+                color: borderColor ?? AppColors.borderColor,
                 width: 1,
               ),
               boxShadow: [
@@ -108,7 +114,7 @@ class ActionMenuTile extends StatelessWidget {
                         style: textTheme.bodyLarge?.copyWith(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.black,
+
                         ),
                       ),
 
@@ -122,7 +128,7 @@ class ActionMenuTile extends StatelessWidget {
                           style: textTheme.bodySmall?.copyWith(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.grey100,
+
                             height: 1.3,
                           ),
                         ),

@@ -30,11 +30,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppSystemUiOverlay.style(context),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),

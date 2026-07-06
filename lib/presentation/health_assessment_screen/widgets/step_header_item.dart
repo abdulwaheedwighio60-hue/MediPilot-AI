@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:med_pilot_ai/core/constants/app_colors.dart';
 
 class StepHeaderItem extends StatelessWidget {
   const StepHeaderItem({
@@ -32,20 +33,29 @@ class StepHeaderItem extends StatelessWidget {
     final bool current = index == currentIndex;
 
     final Color inactiveCircleColor = isDark
-        ? const Color(0xFF111827)
-        : Colors.white;
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
 
     final Color inactiveDotColor = isDark
-        ? borderColor.withValues(alpha: 0.80)
-        : borderColor;
+        ? AppColors.darkBorder
+        : AppColors.lightBorder;
 
     final Color activeBorderColor = current || completed
-        ? primaryColor
+        ? AppColors.primary
         : borderColor;
 
     final Color circleFillColor = completed
-        ? primaryColor
+        ? AppColors.primary
         : inactiveCircleColor;
+
+    // ✅ ADDED: Step label colors according to light/dark mode
+    final Color activeStepTextColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+
+    final Color inactiveStepTextColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
 
     final Color splashColor = primaryColor.withValues(
       alpha: isDark ? 0.16 : 0.10,
@@ -99,7 +109,7 @@ class StepHeaderItem extends StatelessWidget {
                     ? Icon(
                   Icons.check_rounded,
                   size: 14.sp,
-                  color: Colors.white,
+                  color: AppColors.white,
                 )
                     : AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
@@ -108,7 +118,7 @@ class StepHeaderItem extends StatelessWidget {
                   height: current ? 7.w : 5.w,
                   decoration: BoxDecoration(
                     color: current
-                        ? primaryColor
+                        ? AppColors.primary
                         : inactiveDotColor,
                     shape: BoxShape.circle,
                   ),
@@ -123,7 +133,10 @@ class StepHeaderItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: current ? textColor : inactiveTextColor,
+                  // ✅ CHANGED: Text color now supports light/dark mode
+                  color: current || completed
+                      ? activeStepTextColor
+                      : inactiveStepTextColor,
                   fontSize: 11.sp,
                   fontWeight: current
                       ? FontWeight.w700

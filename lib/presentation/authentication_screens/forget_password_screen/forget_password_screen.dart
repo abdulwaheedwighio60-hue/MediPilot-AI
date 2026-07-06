@@ -468,17 +468,13 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         value: AppSystemUiOverlay.style(context),
         child: Scaffold(
           resizeToAvoidBottomInset: true,
-          backgroundColor: isDark
-              ? AppColors.darkBackground
-              : AppColors.lightBackground,
+          backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
+
           appBar: CustomAppBarWidget(
             showBackButton: true,
-            backgroundColor: isDark
-                ? AppColors.darkBackground
-                : AppColors.lightBackground,
-            foregroundColor: isDark
-                ? AppColors.lightBackground
-                : AppColors.darkBackground,
+            backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
+
+            foregroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
           ),
           body: SafeArea(
             top: false,
@@ -510,7 +506,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   Widget _buildMethodSelection(BuildContext context) {
     final TextTheme textTheme =
         Theme.of(context).textTheme;
-
+    final isDark1 = Theme.of(context).brightness == Brightness.dark;
     return SingleChildScrollView(
       keyboardDismissBehavior:
       ScrollViewKeyboardDismissBehavior.manual,
@@ -536,7 +532,8 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           ActionMenuTile(
             title: 'Send via Email',
             icon: CupertinoIcons.mail,
-            iconColor: AppColors.success,
+            backgroundColor: isDark1 ? AppColors.darkCard : AppColors.lightCard,            iconColor: AppColors.success,
+            borderColor: isDark1 ? AppColors.darkBorder : AppColors.lightBorder,
             onTap: () {
               _selectMethod(RecoveryMethod.email);
             },
@@ -552,6 +549,9 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
             AppColors.error.withValues(alpha: 0.08),
             highlightColor:
             AppColors.error.withValues(alpha: 0.04),
+            backgroundColor: isDark1 ? AppColors.darkCard : AppColors.lightCard,
+            borderColor: isDark1 ? AppColors.darkBorder : AppColors.lightBorder,
+
             onTap: () {
               _selectMethod(RecoveryMethod.sms);
             },
@@ -573,6 +573,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
             AppColors.containerColor.withValues(
               alpha: 0.04,
             ),
+            backgroundColor: isDark1 ? AppColors.darkCard : AppColors.lightCard,            borderColor: isDark1 ? AppColors.darkBorder : AppColors.lightBorder,
             onTap: () {
               _selectMethod(RecoveryMethod.twoFactor);
             },
@@ -680,8 +681,20 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                           ) {
                         _inputFocusNode.unfocus();
                       },
+                      // decoration: InputDecoration(
+                      //   hintText: _inputHint,
+                      //     prefixIcon: Icon(
+                      //       _fieldIcon,
+                      //       size: 20.sp,
+                      //       color: _selectedMethodColor,
+                      //     ),
+                      //   //   filled: true,
+                      //     fillColor: isDark
+                      //         ? AppColors.darkCard
+                      //         : AppColors.lightCard,
+                      //   filled: true,
+                      // ),
                       decoration: InputDecoration(
-                        labelText: _inputLabel,
                         hintText: _inputHint,
                         prefixIcon: Icon(
                           _fieldIcon,
@@ -690,8 +703,8 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                         ),
                         filled: true,
                         fillColor: isDark
-                            ? AppColors.darkBackground
-                            : AppColors.white,
+                            ? AppColors.darkCard
+                            : AppColors.lightCard,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 14.w,
                           vertical: 15.h,

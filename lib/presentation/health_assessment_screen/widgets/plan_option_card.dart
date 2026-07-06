@@ -31,24 +31,43 @@ class PlanOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
+    // ✅ LIGHT / DARK CARD COLORS
     final Color cardColor = isDark
         ? AppColors.darkCard
         : AppColors.lightCard;
 
-    final Color titleColor = isDark
-        ? Colors.white
-        : AppColors.darkTextPrimary;
+    // ✅ Main text: title, price, features
+    final Color primaryTextColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
 
-    final Color subtitleColor = isDark
-        ? Colors.white.withOpacity(0.70)
-        : AppColors.darkTextSecondary;
+    // ✅ Secondary text: period, description
+    final Color secondaryTextColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
 
+    // ✅ Border color
     final Color normalBorderColor = isDark
-        ? Colors.white.withOpacity(0.12)
-        : borderColor;
+        ? AppColors.darkBorder
+        : AppColors.lightBorder;
+
+    // ✅ Selected check icon color
+    final Color selectedIconColor = isDark
+        ? AppColors.darkBackground
+        : AppColors.white;
+
+    // ✅ Badge background color
+    final Color badgeBackgroundColor = primaryColor.withOpacity(
+      isDark ? 0.18 : 0.12,
+    );
+
+    // ✅ Feature icon background
+    final Color featureIconBackgroundColor = primaryColor.withOpacity(
+      isDark ? 0.18 : 0.12,
+    );
 
     return Material(
       color: Colors.transparent,
@@ -87,7 +106,8 @@ class PlanOptionCard extends StatelessWidget {
                     child: Text(
                       title,
                       style: theme.textTheme.titleLarge?.copyWith(
-                        color: titleColor,
+                        // ✅ CHANGED: title light/dark color
+                        color: primaryTextColor,
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w800,
                       ),
@@ -101,14 +121,13 @@ class PlanOptionCard extends StatelessWidget {
                         vertical: 5.h,
                       ),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(
-                          isDark ? 0.18 : 0.12,
-                        ),
+                        color: badgeBackgroundColor,
                         borderRadius: BorderRadius.circular(30.r),
                       ),
                       child: Text(
                         badge!,
                         style: theme.textTheme.labelSmall?.copyWith(
+                          // ✅ CHANGED: badge text color
                           color: primaryColor,
                           fontWeight: FontWeight.w800,
                           fontSize: 9.sp,
@@ -134,7 +153,8 @@ class PlanOptionCard extends StatelessWidget {
                         ? Icon(
                       Icons.check_rounded,
                       size: 14.sp,
-                      color: Colors.white,
+                      // ✅ CHANGED: selected icon readable in both themes
+                      color: selectedIconColor,
                     )
                         : null,
                   ),
@@ -149,7 +169,8 @@ class PlanOptionCard extends StatelessWidget {
                   Text(
                     price,
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      color: titleColor,
+                      // ✅ CHANGED: price light/dark color
+                      color: primaryTextColor,
                       fontSize: 25.sp,
                       fontWeight: FontWeight.w800,
                     ),
@@ -162,7 +183,8 @@ class PlanOptionCard extends StatelessWidget {
                     child: Text(
                       period,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: subtitleColor,
+                        // ✅ CHANGED: period light/dark color
+                        color: secondaryTextColor,
                         fontSize: 12.sp,
                       ),
                     ),
@@ -175,7 +197,8 @@ class PlanOptionCard extends StatelessWidget {
               Text(
                 description,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: subtitleColor,
+                  // ✅ CHANGED: description light/dark color
+                  color: secondaryTextColor,
                   fontSize: 12.sp,
                   height: 1.45,
                 ),
@@ -194,9 +217,7 @@ class PlanOptionCard extends StatelessWidget {
                           height: 20.w,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(
-                              isDark ? 0.18 : 0.12,
-                            ),
+                            color: featureIconBackgroundColor,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -212,7 +233,8 @@ class PlanOptionCard extends StatelessWidget {
                           child: Text(
                             feature,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: titleColor,
+                              // ✅ CHANGED: feature text light/dark color
+                              color: primaryTextColor,
                               fontSize: 12.sp,
                               height: 1.35,
                             ),
