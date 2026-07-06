@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:med_pilot_ai/core/constants/app_colors.dart';
 import 'package:med_pilot_ai/core/constants/app_images.dart';
 import 'package:med_pilot_ai/core/router/app_router.dart';
 import 'package:med_pilot_ai/core/router/app_routes.dart';
+import 'package:med_pilot_ai/core/theme/system_ui_overlay.dart';
+import 'package:med_pilot_ai/model/onboarding_model.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,32 +21,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   int _currentPage = 0;
 
-  final List<_OnboardingPageData> _pages = const [
-    _OnboardingPageData(
+  final List<OnboardingPageData> _pages = const [
+    OnboardingPageData(
       image: AppImages.frameImage1,
       title: 'Personalized Health\nThat You Can Control',
       description:
       'Take charge of your wellness journey\neffortlessly.',
     ),
-    _OnboardingPageData(
+    OnboardingPageData(
       image: AppImages.frameImage2,
       title: 'All Your Health Data\nIn One Secure Place',
       description:
       'Access and manage your complete health\ninformation whenever you need it.',
     ),
-    _OnboardingPageData(
+    OnboardingPageData(
       image: AppImages.frameImage3,
       title: 'Smarter Health Insights\nPowered By AI',
       description:
       'Get meaningful insights and personalized\nrecommendations for better health.',
     ),
-    _OnboardingPageData(
+    OnboardingPageData(
       image: AppImages.frameImage4,
       title: 'Track Your Progress\nEvery Step Of The Way',
       description:
       'Monitor your health activities and see your\nprogress in a simple way.',
     ),
-    _OnboardingPageData(
+    OnboardingPageData(
       image: AppImages.frameImage5,
       title: 'Your Health Journey\nStarts Here',
       description:
@@ -88,18 +91,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-        systemNavigationBarDividerColor: Colors.white,
-      ),
+      value: AppSystemUiOverlay.style(context),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
         body: LayoutBuilder(
           builder: (context, constraints) {
             final double screenHeight = constraints.maxHeight;
@@ -122,14 +118,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             return Stack(
               children: [
                 // Background
-                const Positioned.fill(
+                Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        stops: [0.0, 0.46, 0.70, 1.0],
-                        colors: [
+                        stops: const [0.0, 0.46, 0.70, 1.0],
+                        colors: isDark
+                            ? const [
+                          Color(0xFF111827),
+                          Color(0xFF111827),
+                          Color(0xFF0F172A),
+                          Color(0xFF0B1120),
+                        ]
+                            : const [
                           Color(0xFFE9FFF9),
                           Color(0xFFF0FFFB),
                           Color(0xFFF9FFFD),
@@ -230,7 +233,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _BottomContentPanel extends StatelessWidget {
-  final _OnboardingPageData page;
+  final OnboardingPageData page;
   final double bottomPadding;
   final bool isLastPage;
   final VoidCallback onPrevious;
@@ -246,18 +249,49 @@ class _BottomContentPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    final Color panelColor = isDark
+        ? const Color(0xFF111827)
+        : Colors.white;
+
+    final Color titleColor = isDark
+        ? Colors.white
+        : const Color(0xFF1D2939);
+
+    final Color descriptionColor = isDark
+        ? Colors.white.withValues(alpha: 0.68)
+        : const Color(0xFF667085);
+
+    final Color borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.transparent;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: panelColor,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(32.r),
         ),
+        border: Border.all(
+          color: borderColor,
+          width: 1,
+        ),
+        boxShadow: isDark
+            ? null
+            : <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, -6),
+          ),
+        ],
       ),
       child: Stack(
         alignment: Alignment.center,
-        children: [
-          // Heading
+        children: <Widget>[
           Positioned(
             top: 33.h,
             left: 22.w,
@@ -266,17 +300,17 @@ class _BottomContentPanel extends StatelessWidget {
               page.title,
               textAlign: TextAlign.center,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 28.sp,
                 height: 1.06,
                 letterSpacing: -0.7,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF1D2939),
+                color: titleColor,
               ),
             ),
           ),
 
-          // Description
           Positioned(
             top: 127.h,
             left: 24.w,
@@ -285,23 +319,23 @@ class _BottomContentPanel extends StatelessWidget {
               page.description,
               textAlign: TextAlign.center,
               maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 14.sp,
                 height: 1.45,
                 fontWeight: FontWeight.w400,
-                color: const Color(0xFF667085),
+                color: descriptionColor,
               ),
             ),
           ),
 
-          // Navigation buttons
           Positioned(
             bottom: bottomPadding,
             left: 0,
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              children: <Widget>[
                 _CircularNavigationButton(
                   icon: Icons.chevron_left_rounded,
                   onPressed: onPrevious,
@@ -321,7 +355,6 @@ class _BottomContentPanel extends StatelessWidget {
     );
   }
 }
-
 class _CircularNavigationButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
@@ -406,27 +439,16 @@ class _ImageErrorPlaceholder extends StatelessWidget {
           color: Colors.white.withOpacity(0.65),
           borderRadius: BorderRadius.circular(32.r),
           border: Border.all(
-            color: const Color(0xFF14B8A6).withOpacity(0.25),
+            color: AppColors.primary.withOpacity(0.25),
           ),
         ),
         child: Icon(
           Icons.health_and_safety_outlined,
           size: 70.sp,
-          color: const Color(0xFF14B8A6),
+          color: AppColors.primary,
         ),
       ),
     );
   }
 }
 
-class _OnboardingPageData {
-  final String image;
-  final String title;
-  final String description;
-
-  const _OnboardingPageData({
-    required this.image,
-    required this.title,
-    required this.description,
-  });
-}

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:med_pilot_ai/core/constants/app_colors.dart';
 import 'package:med_pilot_ai/core/theme/system_ui_overlay.dart';
+import 'package:med_pilot_ai/core/validators/app_input_validators.dart';
+import 'package:med_pilot_ai/presentation/health_assessment_screen/widgets/health_assessment_illustration.dart';
+import 'package:med_pilot_ai/presentation/health_assessment_screen/widgets/plan_option_card.dart';
+import 'package:med_pilot_ai/presentation/health_assessment_screen/widgets/step_header_item.dart';
 
 enum HealthAssessmentStep {
   assessment,
@@ -18,12 +24,6 @@ class HealthAssessmentScreen extends StatefulWidget {
 }
 
 class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
-  static const Color _primaryColor = Color(0xFF19BFAF);
-  static const Color _darkTextColor = Color(0xFF1F2937);
-  static const Color _secondaryTextColor = Color(0xFF7B8494);
-  static const Color _borderColor = Color(0xFFE7EAF0);
-  static const Color _softBackgroundColor = Color(0xFFF8FAFB);
-
   final GlobalKey<FormState> _personalInfoFormKey =
   GlobalKey<FormState>();
 
@@ -48,6 +48,40 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     'Personal Info',
     'Choose Plan',
   ];
+
+  bool _isDark(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
+  Color _backgroundColor(BuildContext context) {
+    return _isDark(context)
+        ? AppColors.darkBackground
+        : AppColors.lightBackground;
+  }
+
+  Color _surfaceColor(BuildContext context) {
+    return _isDark(context)
+        ? AppColors.darkCard
+        : AppColors.lightCard;
+  }
+
+  Color _primaryTextColor(BuildContext context) {
+    return _isDark(context)
+        ? Colors.white
+        : AppColors.darkTextPrimary;
+  }
+
+  Color _secondaryTextColor(BuildContext context) {
+    return _isDark(context)
+        ? Colors.white.withValues(alpha: 0.70)
+        : AppColors.darkTextSecondary;
+  }
+
+  Color _borderColor(BuildContext context) {
+    return _isDark(context)
+        ? Colors.white.withValues(alpha: 0.14)
+        : AppColors.borderColor;
+  }
 
   @override
   void dispose() {
@@ -102,9 +136,15 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              const SnackBar(
+              SnackBar(
                 behavior: SnackBarBehavior.floating,
-                content: Text('Please select your gender.'),
+                backgroundColor: _surfaceColor(context),
+                content: Text(
+                  'Please select your gender.',
+                  style: TextStyle(
+                    color: _primaryTextColor(context),
+                  ),
+                ),
               ),
             );
           return;
@@ -119,8 +159,12 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           ..showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
+              backgroundColor: _surfaceColor(context),
               content: Text(
                 '$_selectedPlan plan selected successfully.',
+                style: TextStyle(
+                  color: _primaryTextColor(context),
+                ),
               ),
             ),
           );
@@ -149,8 +193,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return PopScope(
-      canPop:
-      _currentStep == HealthAssessmentStep.assessment,
+      canPop: _currentStep == HealthAssessmentStep.assessment,
       onPopInvokedWithResult: (
           bool didPop,
           Object? result,
@@ -163,7 +206,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         value: AppSystemUiOverlay.style(context),
         child: Scaffold(
           resizeToAvoidBottomInset: true,
-          backgroundColor: Colors.white,
+          backgroundColor: _backgroundColor(context),
           body: SafeArea(
             child: Column(
               children: <Widget>[
@@ -191,6 +234,14 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   }
 
   Widget _buildStepHeader() {
+    final Color headerColor = _isDark(context)
+        ? AppColors.darkCard
+        : AppColors.lightCard;
+
+    final Color activeTextColor = _primaryTextColor(context);
+    final Color inactiveTextColor = _secondaryTextColor(context);
+    final Color lineColor = _borderColor(context);
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
@@ -199,7 +250,15 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
         12.w,
         8.h,
       ),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: headerColor,
+        border: Border(
+          bottom: BorderSide(
+            color: lineColor,
+            width: 1,
+          ),
+        ),
+      ),
       child: LayoutBuilder(
         builder: (
             BuildContext context,
@@ -214,8 +273,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
           final double activeLineWidth =
               totalLineWidth *
-                  (_currentStep.index /
-                      (_stepLabels.length - 1));
+                  (_currentStep.index / (_stepLabels.length - 1));
 
           return SizedBox(
             height: 58.h,
@@ -227,50 +285,40 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                   width: totalLineWidth,
                   child: Container(
                     height: 2.h,
-                    color: _borderColor,
+                    color: lineColor,
                   ),
                 ),
 
                 AnimatedPositioned(
-                  duration:
-                  const Duration(milliseconds: 280),
+                  duration: const Duration(milliseconds: 280),
                   curve: Curves.easeInOut,
                   top: 11.h,
                   left: lineStart,
                   width: activeLineWidth,
                   child: Container(
                     height: 2.h,
-                    color: _primaryColor,
+                    color: AppColors.primaryLight,
                   ),
                 ),
 
                 Row(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: List<Widget>.generate(
                     _stepLabels.length,
                         (int index) {
                       return Expanded(
-                        child: _StepHeaderItem(
+                        child: StepHeaderItem(
                           label: _stepLabels[index],
                           index: index,
-                          currentIndex:
-                          _currentStep.index,
-                          primaryColor: _primaryColor,
-                          borderColor: _borderColor,
-                          textColor: _darkTextColor,
-                          inactiveTextColor:
-                          _secondaryTextColor,
+                          currentIndex: _currentStep.index,
+                          primaryColor: AppColors.primaryLight,
+                          borderColor: lineColor,
+                          textColor: activeTextColor,
+                          inactiveTextColor: inactiveTextColor,
                           onTap: () {
-                            /*
-                              Users may return to a completed step,
-                              but cannot skip an incomplete step.
-                            */
-                            if (index <=
-                                _currentStep.index) {
+                            if (index <= _currentStep.index) {
                               _changeStep(
-                                HealthAssessmentStep
-                                    .values[index],
+                                HealthAssessmentStep.values[index],
                               );
                             }
                           },
@@ -309,7 +357,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               children: <Widget>[
                 SizedBox(height: 8.h),
 
-                const _HealthAssessmentIllustration(),
+                const HealthAssessmentIllustration(),
 
                 SizedBox(height: 34.h),
 
@@ -317,7 +365,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                   "Let's take a quick health\nassessment.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _darkTextColor,
+                    color: _primaryTextColor(context),
                     fontSize: 25.sp,
                     height: 1.25,
                     fontWeight: FontWeight.w800,
@@ -331,7 +379,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                   'This should take around 1–2 minutes.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _secondaryTextColor,
+                    color: _secondaryTextColor(context),
                     fontSize: 13.sp,
                     height: 1.5,
                     fontWeight: FontWeight.w400,
@@ -365,7 +413,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             Text(
               'Tell us about yourself',
               style: TextStyle(
-                color: _darkTextColor,
+                color: _primaryTextColor(context),
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.4,
@@ -377,7 +425,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             Text(
               'Your information helps us personalize your health experience.',
               style: TextStyle(
-                color: _secondaryTextColor,
+                color: _secondaryTextColor(context),
                 fontSize: 13.sp,
                 height: 1.5,
               ),
@@ -389,28 +437,28 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               controller: _nameController,
               focusNode: _nameFocusNode,
               textInputAction: TextInputAction.next,
+              style: TextStyle(
+                color: _primaryTextColor(context),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
               autofillHints: const <String>[
                 AutofillHints.name,
               ],
               onFieldSubmitted: (_) {
                 _ageFocusNode.requestFocus();
               },
-              validator: (String? value) {
-                if (value == null ||
-                    value.trim().isEmpty) {
-                  return 'Please enter your full name';
-                }
-
-                if (value.trim().length < 2) {
-                  return 'Please enter a valid name';
-                }
-
-                return null;
-              },
-              decoration: _inputDecoration(
-                label: 'Full Name',
-                hint: 'Enter your full name',
-                icon: Icons.person_outline_rounded,
+              validator: AppInputValidators.email,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.mail_outline_rounded),
+                hintText: 'Enter your full name',
+                hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 13.sp,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14.w,
+                  vertical: 14.h,
+                ),
               ),
             ),
 
@@ -421,6 +469,11 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               focusNode: _ageFocusNode,
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.done,
+              style: TextStyle(
+                color: _primaryTextColor(context),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(3),
@@ -439,10 +492,16 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
                 return null;
               },
-              decoration: _inputDecoration(
-                label: 'Age',
-                hint: 'Enter your age',
-                icon: Icons.calendar_today_outlined,
+              decoration: InputDecoration(
+                hintText: 'Enter your age',
+                prefixIcon: Icon(Icons.calendar_today_outlined),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14.w,
+                  vertical: 14.h,
+                ),
+                hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 13.sp,
+                ),
               ),
             ),
 
@@ -451,7 +510,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             Text(
               'Gender',
               style: TextStyle(
-                color: _darkTextColor,
+                color: _primaryTextColor(context),
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -474,21 +533,20 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                   label: Text(gender),
                   selected: selected,
                   showCheckmark: false,
-                  selectedColor: _primaryColor,
-                  backgroundColor: Colors.white,
+                  selectedColor: AppColors.primaryLight,
+                  backgroundColor: _surfaceColor(context),
                   side: BorderSide(
                     color: selected
-                        ? _primaryColor
-                        : _borderColor,
+                        ? AppColors.primaryLight
+                        : _borderColor(context),
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                    BorderRadius.circular(30.r),
+                    borderRadius: BorderRadius.circular(30.r),
                   ),
                   labelStyle: TextStyle(
                     color: selected
                         ? Colors.white
-                        : _darkTextColor,
+                        : _primaryTextColor(context),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -510,51 +568,74 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String label,
-    required String hint,
-    required IconData icon,
-  }) {
-    OutlineInputBorder buildBorder(Color color) {
-      return OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14.r),
-        borderSide: BorderSide(color: color),
-      );
-    }
-
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(
-        icon,
-        size: 21.sp,
-        color: _secondaryTextColor,
-      ),
-      filled: true,
-      fillColor: _softBackgroundColor,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: 14.w,
-        vertical: 16.h,
-      ),
-      border: buildBorder(_borderColor),
-      enabledBorder: buildBorder(_borderColor),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14.r),
-        borderSide: const BorderSide(
-          color: _primaryColor,
-          width: 1.5,
-        ),
-      ),
-      errorBorder: buildBorder(Colors.redAccent),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14.r),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1.5,
-        ),
-      ),
-    );
-  }
+  // InputDecoration _inputDecoration({
+  //   required String label,
+  //   required String hint,
+  //   required IconData icon,
+  // }) {
+  //   final Color fillColor = _surfaceColor(context);
+  //   final Color borderColor = _borderColor(context);
+  //   final Color primaryTextColor = _primaryTextColor(context);
+  //   final Color secondaryTextColor = _secondaryTextColor(context);
+  //
+  //   OutlineInputBorder buildBorder(Color color) {
+  //     return OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(14.r),
+  //       borderSide: BorderSide(color: color),
+  //     );
+  //   }
+  //
+  //   return InputDecoration(
+  //     labelText: label,
+  //     hintText: hint,
+  //     labelStyle: TextStyle(
+  //       color: secondaryTextColor,
+  //       fontSize: 13.sp,
+  //     ),
+  //     hintStyle: TextStyle(
+  //       color: secondaryTextColor.withValues(alpha: 0.75),
+  //       fontSize: 13.sp,
+  //     ),
+  //     prefixIcon: Icon(
+  //       icon,
+  //       size: 21.sp,
+  //       color: secondaryTextColor,
+  //     ),
+  //     filled: true,
+  //     fillColor: fillColor,
+  //     contentPadding: EdgeInsets.symmetric(
+  //       horizontal: 14.w,
+  //       vertical: 16.h,
+  //     ),
+  //     border: buildBorder(borderColor),
+  //     enabledBorder: buildBorder(borderColor),
+  //     focusedBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(14.r),
+  //       borderSide: BorderSide(
+  //         color: AppColors.primaryLight,
+  //         width: 1.5,
+  //       ),
+  //     ),
+  //     errorBorder: buildBorder(Colors.redAccent),
+  //     focusedErrorBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(14.r),
+  //       borderSide: const BorderSide(
+  //         color: Colors.redAccent,
+  //         width: 1.5,
+  //       ),
+  //     ),
+  //     errorStyle: TextStyle(
+  //       color: Colors.redAccent,
+  //       fontSize: 11.sp,
+  //       fontWeight: FontWeight.w500,
+  //     ),
+  //     floatingLabelStyle: TextStyle(
+  //       color: AppColors.primaryLight,
+  //       fontSize: 13.sp,
+  //       fontWeight: FontWeight.w600,
+  //     ),
+  //   );
+  // }
 
   Widget _buildChoosePlanContent() {
     return SingleChildScrollView(
@@ -570,7 +651,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           Text(
             'Choose your plan',
             style: TextStyle(
-              color: _darkTextColor,
+              color: _primaryTextColor(context),
               fontSize: 24.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.4,
@@ -582,7 +663,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
           Text(
             'Select the plan that best supports your health goals.',
             style: TextStyle(
-              color: _secondaryTextColor,
+              color: _secondaryTextColor(context),
               fontSize: 13.sp,
               height: 1.5,
             ),
@@ -590,7 +671,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
           SizedBox(height: 24.h),
 
-          _PlanOptionCard(
+          PlanOptionCard(
             title: 'Basic',
             price: '\$4.99',
             period: '/month',
@@ -602,10 +683,8 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               'Basic progress tracking',
             ],
             selected: _selectedPlan == 'Basic',
-            primaryColor: _primaryColor,
-            borderColor: _borderColor,
-            darkTextColor: _darkTextColor,
-            secondaryTextColor: _secondaryTextColor,
+            primaryColor: AppColors.primaryLight,
+            borderColor: _borderColor(context),
             onTap: () {
               setState(() {
                 _selectedPlan = 'Basic';
@@ -615,7 +694,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
 
           SizedBox(height: 14.h),
 
-          _PlanOptionCard(
+          PlanOptionCard(
             title: 'Premium',
             price: '\$9.99',
             period: '/month',
@@ -629,10 +708,8 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
               'Priority support',
             ],
             selected: _selectedPlan == 'Premium',
-            primaryColor: _primaryColor,
-            borderColor: _borderColor,
-            darkTextColor: _darkTextColor,
-            secondaryTextColor: _secondaryTextColor,
+            primaryColor: AppColors.primaryLight,
+            borderColor: _borderColor(context),
             onTap: () {
               setState(() {
                 _selectedPlan = 'Premium';
@@ -647,7 +724,16 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
   Widget _buildBottomButton() {
     return SafeArea(
       top: false,
-      child: Padding(
+      child: Container(
+        decoration: BoxDecoration(
+          color: _backgroundColor(context),
+          border: Border(
+            top: BorderSide(
+              color: _borderColor(context),
+              width: 1,
+            ),
+          ),
+        ),
         padding: EdgeInsets.fromLTRB(
           20.w,
           10.h,
@@ -661,7 +747,7 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
             onPressed: _handlePrimaryButton,
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: _primaryColor,
+              backgroundColor: AppColors.primaryLight,
               foregroundColor: Colors.white,
               shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
@@ -675,523 +761,6 @@ class _HealthAssessmentScreenState extends State<HealthAssessmentScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StepHeaderItem extends StatelessWidget {
-  const _StepHeaderItem({
-    required this.label,
-    required this.index,
-    required this.currentIndex,
-    required this.primaryColor,
-    required this.borderColor,
-    required this.textColor,
-    required this.inactiveTextColor,
-    required this.onTap,
-  });
-
-  final String label;
-  final int index;
-  final int currentIndex;
-  final Color primaryColor;
-  final Color borderColor;
-  final Color textColor;
-  final Color inactiveTextColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool completed = index < currentIndex;
-    final bool current = index == currentIndex;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20.r),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            width: 23.w,
-            height: 23.w,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: completed
-                  ? primaryColor
-                  : Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: current || completed
-                    ? primaryColor
-                    : borderColor,
-                width: current ? 2 : 1.5,
-              ),
-              boxShadow: current
-                  ? <BoxShadow>[
-                BoxShadow(
-                  color:
-                  primaryColor.withValues(alpha: 0.14),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                ),
-              ]
-                  : null,
-            ),
-            child: completed
-                ? Icon(
-              Icons.check_rounded,
-              size: 14.sp,
-              color: Colors.white,
-            )
-                : Container(
-              width: current ? 7.w : 5.w,
-              height: current ? 7.w : 5.w,
-              decoration: BoxDecoration(
-                color: current
-                    ? primaryColor
-                    : borderColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
-          SizedBox(height: 8.h),
-
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: current
-                  ? textColor
-                  : inactiveTextColor,
-              fontSize: 11.sp,
-              fontWeight: current
-                  ? FontWeight.w700
-                  : FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HealthAssessmentIllustration extends StatelessWidget {
-  const _HealthAssessmentIllustration();
-
-  static const Color _primaryColor = Color(0xFF19BFAF);
-  static const Color _lineColor = Color(0xFFE8EBEF);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 210.w,
-      height: 270.h,
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFBFC),
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(
-          color: const Color(0xFFF0F2F4),
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            top: 2.h,
-            left: 2.w,
-            child: Container(
-              width: 34.w,
-              height: 34.w,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: _primaryColor.withValues(alpha: 0.10),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.health_and_safety_outlined,
-                size: 22.sp,
-                color: _primaryColor,
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 83.h,
-            left: 6.w,
-            child: _IllustrationLine(width: 76.w),
-          ),
-
-          Positioned(
-            top: 83.h,
-            right: 2.w,
-            child: _IllustrationLine(width: 40.w),
-          ),
-
-          Positioned(
-            top: 101.h,
-            left: 6.w,
-            child: _IllustrationLine(width: 114.w),
-          ),
-
-          Positioned(
-            top: 122.h,
-            left: 6.w,
-            child: Container(
-              width: 126.w,
-              height: 40.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFFF1F3F5),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 120.h,
-            right: 26.w,
-            child: Container(
-              width: 56.w,
-              height: 42.h,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE9FFF4),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: const Color(0xFF88E6A9),
-                  width: 1.5,
-                ),
-              ),
-              child: Container(
-                width: 21.w,
-                height: 21.w,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2CD276),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_rounded,
-                  size: 13.sp,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 181.h,
-            left: 6.w,
-            child: _IllustrationLine(width: 72.w),
-          ),
-
-          Positioned(
-            top: 199.h,
-            left: 6.w,
-            child: _IllustrationLine(width: 112.w),
-          ),
-
-          Positioned(
-            left: 6.w,
-            right: 6.w,
-            bottom: 5.h,
-            child: Row(
-              mainAxisAlignment:
-              MainAxisAlignment.spaceBetween,
-              children: List<Widget>.generate(
-                4,
-                    (int index) {
-                  final bool selected = index == 1;
-
-                  return Container(
-                    width: 36.w,
-                    height: 42.h,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFFE9FFF4)
-                          : Colors.white,
-                      borderRadius:
-                      BorderRadius.circular(10.r),
-                      border: Border.all(
-                        color: selected
-                            ? const Color(0xFF88E6A9)
-                            : const Color(0xFFF1F3F5),
-                        width: selected ? 1.5 : 1,
-                      ),
-                    ),
-                    child: selected
-                        ? Container(
-                      width: 20.w,
-                      height: 20.w,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2CD276),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.check_rounded,
-                        size: 12.sp,
-                        color: Colors.white,
-                      ),
-                    )
-                        : null,
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _IllustrationLine extends StatelessWidget {
-  const _IllustrationLine({
-    required this.width,
-  });
-
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: 7.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8EBEF),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-    );
-  }
-}
-
-class _PlanOptionCard extends StatelessWidget {
-  const _PlanOptionCard({
-    required this.title,
-    required this.price,
-    required this.period,
-    required this.description,
-    required this.features,
-    required this.selected,
-    required this.primaryColor,
-    required this.borderColor,
-    required this.darkTextColor,
-    required this.secondaryTextColor,
-    required this.onTap,
-    this.badge,
-  });
-
-  final String title;
-  final String price;
-  final String period;
-  final String description;
-  final List<String> features;
-  final bool selected;
-  final Color primaryColor;
-  final Color borderColor;
-  final Color darkTextColor;
-  final Color secondaryTextColor;
-  final VoidCallback onTap;
-  final String? badge;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18.r),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          width: double.infinity,
-          padding: EdgeInsets.all(18.r),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(
-              color: selected
-                  ? primaryColor
-                  : borderColor,
-              width: selected ? 1.7 : 1,
-            ),
-            boxShadow: selected
-                ? <BoxShadow>[
-              BoxShadow(
-                color:
-                primaryColor.withValues(alpha: 0.10),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ]
-                : null,
-          ),
-          child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        color: darkTextColor,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-
-                  if (badge != null)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 9.w,
-                        vertical: 5.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(
-                          alpha: 0.12,
-                        ),
-                        borderRadius:
-                        BorderRadius.circular(30.r),
-                      ),
-                      child: Text(
-                        badge!,
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 9.sp,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-
-                  SizedBox(width: 10.w),
-
-                  Container(
-                    width: 23.w,
-                    height: 23.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? primaryColor
-                          : Colors.transparent,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: selected
-                            ? primaryColor
-                            : borderColor,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: selected
-                        ? Icon(
-                      Icons.check_rounded,
-                      size: 14.sp,
-                      color: Colors.white,
-                    )
-                        : null,
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 10.h),
-
-              Row(
-                crossAxisAlignment:
-                CrossAxisAlignment.end,
-                children: <Widget>[
-                  Text(
-                    price,
-                    style: TextStyle(
-                      color: darkTextColor,
-                      fontSize: 25.sp,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(width: 4.w),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 3.h),
-                    child: Text(
-                      period,
-                      style: TextStyle(
-                        color: secondaryTextColor,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 5.h),
-
-              Text(
-                description,
-                style: TextStyle(
-                  color: secondaryTextColor,
-                  fontSize: 12.sp,
-                  height: 1.45,
-                ),
-              ),
-
-              SizedBox(height: 16.h),
-
-              ...features.map(
-                    (String feature) {
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 10.h),
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                          width: 20.w,
-                          height: 20.w,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: primaryColor.withValues(
-                              alpha: 0.12,
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.check_rounded,
-                            size: 13.sp,
-                            color: primaryColor,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            feature,
-                            style: TextStyle(
-                              color: darkTextColor,
-                              fontSize: 12.sp,
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
           ),
         ),
       ),

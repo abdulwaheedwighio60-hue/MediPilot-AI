@@ -5,4 +5,6 @@ class AppRoutes{
   static const loginScreen = "/login";
   static const signUpScreen = "/sign_up";
   static const forgetPasswordScreen = "/forget-password";
+  static const healthAssessmentScreen = "/health-assessment";
+
 }

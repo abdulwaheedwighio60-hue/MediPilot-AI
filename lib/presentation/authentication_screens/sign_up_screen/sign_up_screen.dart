@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:med_pilot_ai/core/constants/app_colors.dart';
 import 'package:med_pilot_ai/core/constants/app_images.dart';
+import 'package:med_pilot_ai/core/router/app_routes.dart';
 import 'package:med_pilot_ai/core/theme/system_ui_overlay.dart';
+import 'package:med_pilot_ai/core/validators/app_input_validators.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -34,11 +37,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscureConfirmPassword = true;
   bool _isSubmitting = false;
 
-  static const Color _primaryColor = AppColors.primary;
-  static const Color _darkColor = Color(0xFF1D2939);
-  static const Color _secondaryTextColor = Color(0xFF667085);
-  static const Color _borderColor = Color(0xFFD0D5DD);
-  static const Color _inactiveBarColor = Color(0xFFE4E7EC);
+  // static const Color _primaryColor = AppColors.primary;
+  // static const Color _darkColor = Color(0xFF1D2939);
+  // static const Color _secondaryTextColor = Color(0xFF667085);
+  // static const Color _borderColor = Color(0xFFD0D5DD);
+  // static const Color _inactiveBarColor = Color(0xFFE4E7EC);
 
   @override
   void initState() {
@@ -131,11 +134,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final score = _calculatePasswordScore(password);
 
     if (password.isEmpty) {
-      return const PasswordStrength(
+      return PasswordStrength(
         activeSegments: 0,
         label: '',
         message: '',
-        color: _inactiveBarColor,
+        color: AppColors.darkTextSecondary,
       );
     }
 
@@ -216,6 +219,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       //   password: password,
       // );
 
+
       await Future<void>.delayed(
         const Duration(milliseconds: 900),
       );
@@ -229,7 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       debugPrint('Sign-up email: $email');
       debugPrint('Password length: ${password.length}');
-
+      context.go(AppRoutes.healthAssessmentScreen);
       // Navigator.pushReplacementNamed(context, '/login');
     } catch (error) {
       if (!mounted) return;
@@ -308,11 +312,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textTheme = Theme.of(context).textTheme;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppSystemUiOverlay.style(context),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
         body: SafeArea(
           child: Form(
             key: _formKey,
@@ -347,17 +353,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Text(
                   'Sign Up to access smart medical & e-pharma.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _secondaryTextColor,
-                    fontSize: 13.sp,
-                    height: 1.4,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: textTheme.bodyMedium,
+                  // TextStyle(
+                  //   color: _secondaryTextColor,
+                  //   fontSize: 13.sp,
+                  //   height: 1.4,
+                  //   fontWeight: FontWeight.w400,
+                  // ),
                 ),
 
                 SizedBox(height: 50.h),
 
-                const _FieldLabel(
+                 _FieldLabel(
                   label: 'Email Address',
                 ),
 
@@ -374,7 +381,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   keyboardType:
                   TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  cursorColor: _primaryColor,
+                  cursorColor: AppColors.primary,
                   autocorrect: false,
                   enableSuggestions: false,
                   scrollPadding: EdgeInsets.only(
@@ -383,27 +390,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onFieldSubmitted: (_) {
                     _passwordFocusNode.requestFocus();
                   },
-                  validator: (value) {
-                    final email = value?.trim() ?? '';
-
-                    if (email.isEmpty) {
-                      return 'Please enter your email address';
-                    }
-
-                    if (!RegExp(
-                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                    ).hasMatch(email)) {
-                      return 'Please enter a valid email address';
-                    }
-
-                    return null;
-                  },
-                  style: _fieldTextStyle,
-                  decoration: _inputDecoration(
+                  validator: AppInputValidators.email,
+                  style: textTheme.bodySmall,
+                  decoration: InputDecoration(
                     hintText:
                     'Enter your email address...',
+                    hintStyle: textTheme.bodySmall?.copyWith(
+                      fontSize: 13.sp,
+                    ),
                     prefixIcon:
-                    Icons.mail_outline_rounded,
+                    Icon(Icons.mail_outline_rounded),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 14.h,
+                    ),
                   ),
                 ),
 
@@ -423,7 +423,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscuringCharacter: '•',
                   keyboardType: TextInputType.text,
                   textInputAction: TextInputAction.next,
-                  cursorColor: _primaryColor,
+                  cursorColor: AppColors.primary,
                   autocorrect: false,
                   enableSuggestions: false,
                   smartDashesType:
@@ -438,38 +438,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     _confirmPasswordFocusNode
                         .requestFocus();
                   },
-                  validator: (value) {
-                    final password = value ?? '';
-
-                    if (password.isEmpty) {
-                      return 'Please enter your password';
-                    }
-
-                    if (password.length < 8) {
-                      return 'Password must contain at least 8 characters';
-                    }
-
-                    if (_calculatePasswordScore(
-                      password,
-                    ) <
-                        4) {
-                      return 'Use uppercase, lowercase, number and special character';
-                    }
-
-                    return null;
-                  },
-                  style: _fieldTextStyle.copyWith(
+                  validator: AppInputValidators.password,
+                  style: textTheme.bodySmall?.copyWith(
                     letterSpacing: 1.1,
                   ),
-                  decoration: _inputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Enter your password',
+                    hintStyle: textTheme.bodySmall,
                     prefixIcon:
-                    Icons.lock_outline_rounded,
+                    Icon(Icons.lock_outline_rounded),
                     suffixIcon:
                     _PasswordVisibilityButton(
                       isObscured: _obscurePassword,
                       onPressed:
                       _togglePasswordVisibility,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 14.h,
                     ),
                   ),
                 ),
@@ -514,7 +500,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   keyboardType: TextInputType.text,
                   textInputAction:
                   TextInputAction.done,
-                  cursorColor: _primaryColor,
+                  cursorColor: AppColors.primary,
                   autocorrect: false,
                   enableSuggestions: false,
                   smartDashesType:
@@ -534,28 +520,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       _signUp();
                     }
                   },
-                  validator: (value) {
-                    final confirmation = value ?? '';
-
-                    if (confirmation.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-
-                    if (confirmation !=
-                        _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-
-                    return null;
-                  },
-                  style: _fieldTextStyle.copyWith(
+                  validator: AppInputValidators.strongPassword,
+                  style: textTheme.bodySmall?.copyWith(
                     letterSpacing: 1.1,
                   ),
-                  decoration: _inputDecoration(
+                  decoration: InputDecoration(
                     hintText:
                     'Confirm your password',
+                    hintStyle: textTheme.bodySmall,
                     prefixIcon:
-                    Icons.lock_outline_rounded,
+
+                    Icon(Icons.lock_outline_rounded),
                     suffixIcon:
                     _PasswordVisibilityButton(
                       isObscured:
@@ -563,7 +538,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       onPressed:
                       _toggleConfirmPasswordVisibility,
                     ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 14.h,
+                    ),
                   ),
+
                 ),
 
                 SizedBox(height: 28.h),
@@ -575,7 +555,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     return SizedBox(
                       width: double.infinity,
-                      height: 48.h,
+                      height: 50.h,
                       child: ElevatedButton(
                         onPressed:
                         canSubmit ? _signUp : null,
@@ -585,13 +565,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           shadowColor:
                           Colors.transparent,
                           backgroundColor:
-                          _primaryColor,
+                          AppColors.primary,
                           disabledBackgroundColor:
-                          const Color(0xFF8CEBDD),
+                          AppColors.primaryLight,
                           foregroundColor:
                           Colors.white,
                           disabledForegroundColor:
-                          const Color(0xFF2AC9B7),
+                          AppColors.primaryLight,
                           shape:
                           RoundedRectangleBorder(
                             borderRadius:
@@ -651,19 +631,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
-                        style: TextStyle(
-                          color: _secondaryTextColor,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        children: const [
+                        style:
+                        textTheme.bodySmall,
+                        // TextStyle(
+                        //   color: AppColors.darkTextSecondary,
+                        //   fontSize: 12.sp,
+                        //   fontWeight: FontWeight.w400,
+                        // ),
+                        children:  [
                           TextSpan(
                             text: 'I already have ',
                           ),
                           TextSpan(
                             text: 'an account',
                             style: TextStyle(
-                              color: _primaryColor,
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -698,7 +680,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             return Icon(
               Icons.local_hospital_outlined,
               size: 38.sp,
-              color: _primaryColor,
+              color: AppColors.primary,
             );
           },
         ),
@@ -706,7 +688,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Text(
           'nightingale',
           style: TextStyle(
-            color: _darkColor,
+            color: AppColors.primary,
             fontSize: 20.sp,
             height: 1,
             fontWeight: FontWeight.w600,
@@ -714,85 +696,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  TextStyle get _fieldTextStyle {
-    return TextStyle(
-      color: _darkColor,
-      fontSize: 13.sp,
-      height: 1.3,
-      fontWeight: FontWeight.w400,
-    );
-  }
-
-  InputDecoration _inputDecoration({
-    required String hintText,
-    required IconData prefixIcon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: TextStyle(
-        color: const Color(0xFF98A2B3),
-        fontSize: 13.sp,
-        fontWeight: FontWeight.w400,
-      ),
-      prefixIcon: Icon(
-        prefixIcon,
-        size: 18.sp,
-        color: const Color(0xFF667085),
-      ),
-      prefixIconConstraints: BoxConstraints(
-        minWidth: 42.w,
-        minHeight: 46.h,
-      ),
-      suffixIcon: suffixIcon,
-      suffixIconConstraints: BoxConstraints(
-        minWidth: 43.w,
-        minHeight: 46.h,
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      isDense: true,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: 13.w,
-        vertical: 15.h,
-      ),
-      errorMaxLines: 2,
-      errorStyle: TextStyle(
-        color: const Color(0xFFF04438),
-        fontSize: 10.5.sp,
-        height: 1.25,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: _borderColor,
-          width: 1,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: _primaryColor,
-          width: 1.3,
-        ),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: Color(0xFFF04438),
-          width: 1,
-        ),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: Color(0xFFF04438),
-          width: 1.3,
-        ),
-      ),
     );
   }
 }
@@ -806,16 +709,23 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
         label,
-        style: TextStyle(
-          color: const Color(0xFF1D2939),
-          fontSize: 12.5.sp,
-          height: 1,
-          fontWeight: FontWeight.w500,
+        style: textTheme.bodySmall?.copyWith(
+            fontSize: 13.5.sp,
+            height: 1,
+            fontWeight: FontWeight.w500,
         ),
+
+        // TextStyle(
+        //   color: const Color(0xFF1D2939),
+        //   fontSize: 12.5.sp,
+        //   height: 1,
+        //   fontWeight: FontWeight.w500,
+        // ),
       ),
     );
   }

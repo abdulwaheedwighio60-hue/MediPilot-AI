@@ -1,9 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:med_pilot_ai/core/constants/app_colors.dart';
 import 'package:med_pilot_ai/core/constants/app_images.dart';
 import 'package:med_pilot_ai/core/router/app_routes.dart';
+import 'package:med_pilot_ai/core/theme/system_ui_overlay.dart';
+import 'package:med_pilot_ai/core/validators/app_input_validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,18 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textTheme = Theme.of(context).textTheme;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-        systemNavigationBarDividerColor: Colors.white,
-      ),
+      value: AppSystemUiOverlay.style(context),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkBackgroundColor : AppColors.lightBackground,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -101,13 +102,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           Text(
                             'nightingale',
-                            style: TextStyle(
-                              color: _darkColor,
-                              fontSize: 20.sp,
-                              height: 1,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -1.1.w,
-                            ),
+                            style: textTheme.titleMedium,
+
                           ),
 
                           SizedBox(height: 20.h),
@@ -115,13 +111,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'Sign In to access smart medical & e-pharma.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: _secondaryTextColor,
-                              fontSize: 13.sp,
-                              height: 1.35,
-                              fontWeight: FontWeight.w400,
+                            style: textTheme.bodySmall?.copyWith(
+                              fontSize: 13,
                             ),
                           ),
+
 
                           SizedBox(height: 49.h),
 
@@ -135,33 +129,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
+
                             cursorColor: _primaryColor,
-                            style: TextStyle(
-                              color: _darkColor,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            decoration: _inputDecoration(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 14.w,
+                                vertical: 14.h,
+                              ),
                               hintText:
                               'Enter your email address...',
-                              prefixIcon:
-                              Icons.mail_outline_rounded,
+                              prefixIcon: Icon(CupertinoIcons.mail),
+                              filled: true,
                             ),
-                            validator: (value) {
-                              final email = value?.trim() ?? '';
-
-                              if (email.isEmpty) {
-                                return 'Please enter your email address';
-                              }
-
-                              if (!RegExp(
-                                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                              ).hasMatch(email)) {
-                                return 'Please enter a valid email address';
-                              }
-
-                              return null;
-                            },
+                            style: textTheme.labelSmall,
+                            validator: AppInputValidators.email,
                           ),
 
                           SizedBox(height: 16.h),
@@ -175,49 +156,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            keyboardType:
-                            TextInputType.visiblePassword,
+                            keyboardType: TextInputType.visiblePassword,
                             textInputAction: TextInputAction.done,
                             cursorColor: _primaryColor,
-                            onFieldSubmitted: (_) => _signIn(),
-                            style: TextStyle(
-                              color: _darkColor,
-                              fontSize: 13.sp,
-                              letterSpacing: 1,
-                            ),
-                            decoration: _inputDecoration(
-                              hintText: '****************',
-                              prefixIcon:
-                              Icons.lock_outline_rounded,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 14.w,
+                                vertical: 14.h,
+                              ),
+                              hintText: 'Enter Your Password',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded),
                               suffixIcon: IconButton(
                                 splashRadius: 20.r,
                                 onPressed: () {
                                   setState(() {
-                                    _obscurePassword =
-                                    !_obscurePassword;
+                                    _obscurePassword = !_obscurePassword;
                                   });
                                 },
                                 icon: Icon(
                                   _obscurePassword
-                                      ? Icons
-                                      .visibility_off_outlined
+                                      ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
                                   size: 18.sp,
-                                  color:
-                                  const Color(0xFF98A2B3),
+                                  color: const Color(0xFF98A2B3),
                                 ),
                               ),
+                              filled: true,
                             ),
-                            validator: (value) {
-                              if ((value ?? '').isEmpty) {
-                                return 'Please enter your password';
-                              }
-
-                              return null;
-                            },
+                            onFieldSubmitted: (_) => _signIn(),
+                            style: textTheme.labelSmall,
+                            validator: AppInputValidators.password,
                           ),
 
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 15.h),
 
                           Row(
                             children: [
@@ -263,12 +234,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                     SizedBox(width: 7.w),
                                     Text(
                                       'Keep me signed in',
-                                      style: TextStyle(
-                                        color: _darkColor,
-                                        fontSize: 12.5.sp,
-                                        fontWeight:
-                                        FontWeight.w400,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        fontSize: 15.sp,
                                       ),
+                                      // TextStyle(
+                                      //   color: _darkColor,
+                                      //   fontSize: 12.5.sp,
+                                      //   fontWeight:
+                                      //   FontWeight.w400,
+                                      // ),
                                     ),
                                   ],
                                 ),
@@ -285,8 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Forgot Password',
                                   style: TextStyle(
                                     color: _primaryColor,
-                                    fontSize: 12.5.sp,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14.5.sp,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
@@ -297,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           SizedBox(
                             width: double.infinity,
-                            height: 47.h,
+                            height: 50.h,
                             child: ElevatedButton(
                               onPressed: _signIn,
                               style: ElevatedButton.styleFrom(
@@ -335,11 +309,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           Row(
                             children: [
-                              const Expanded(
+                               Expanded(
                                 child: Divider(
                                   height: 1,
                                   thickness: 1,
-                                  color: Color(0xFFE4E7EC),
+                                  color: AppColors.lightBackground,
                                 ),
                               ),
                               Padding(
@@ -425,10 +399,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: RichText(
                                 textAlign: TextAlign.center,
                                 text: TextSpan(
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w400,
-                                    color: _secondaryTextColor,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    fontSize: 13
                                   ),
                                   children: const [
                                     TextSpan(
@@ -439,7 +411,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       text: 'Sign Up',
                                       style: TextStyle(
                                         color: _primaryColor,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ],
@@ -460,65 +432,65 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String hintText,
-    required IconData prefixIcon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: TextStyle(
-        color: const Color(0xFF667085),
-        fontSize: 13.sp,
-        fontWeight: FontWeight.w400,
-      ),
-      prefixIcon: Icon(
-        prefixIcon,
-        size: 18.sp,
-        color: const Color(0xFF667085),
-      ),
-      suffixIcon: suffixIcon,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: 14.w,
-        vertical: 14.h,
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      errorMaxLines: 2,
-      errorStyle: TextStyle(
-        fontSize: 10.sp,
-        height: 1,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: _borderColor,
-          width: 1,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: _primaryColor,
-          width: 1.3,
-        ),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1,
-        ),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(13.r),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 1.3,
-        ),
-      ),
-    );
-  }
+  // InputDecoration _inputDecoration({
+  //   required String hintText,
+  //   required IconData prefixIcon,
+  //   Widget? suffixIcon,
+  // }) {
+  //   return InputDecoration(
+  //     hintText: hintText,
+  //     hintStyle: TextStyle(
+  //       color: const Color(0xFF667085),
+  //       fontSize: 13.sp,
+  //       fontWeight: FontWeight.w400,
+  //     ),
+  //     prefixIcon: Icon(
+  //       prefixIcon,
+  //       size: 18.sp,
+  //       color: const Color(0xFF667085),
+  //     ),
+  //     suffixIcon: suffixIcon,
+  //     contentPadding: EdgeInsets.symmetric(
+  //       horizontal: 14.w,
+  //       vertical: 14.h,
+  //     ),
+  //     filled: true,
+  //     fillColor: Colors.white,
+  //     errorMaxLines: 2,
+  //     errorStyle: TextStyle(
+  //       fontSize: 10.sp,
+  //       height: 1,
+  //     ),
+  //     enabledBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(13.r),
+  //       borderSide: const BorderSide(
+  //         color: _borderColor,
+  //         width: 1,
+  //       ),
+  //     ),
+  //     focusedBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(13.r),
+  //       borderSide: const BorderSide(
+  //         color: _primaryColor,
+  //         width: 1.3,
+  //       ),
+  //     ),
+  //     errorBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(13.r),
+  //       borderSide: const BorderSide(
+  //         color: Colors.redAccent,
+  //         width: 1,
+  //       ),
+  //     ),
+  //     focusedErrorBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(13.r),
+  //       borderSide: const BorderSide(
+  //         color: Colors.redAccent,
+  //         width: 1.3,
+  //       ),
+  //     ),
+  //   );
+  // }
 }
 
 class _FieldLabel extends StatelessWidget {
@@ -534,11 +506,8 @@ class _FieldLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         label,
-        style: TextStyle(
-          color: const Color(0xFF1D2939),
-          fontSize: 12.5.sp,
-          height: 1,
-          fontWeight: FontWeight.w500,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          fontSize: 12,
         ),
       ),
     );

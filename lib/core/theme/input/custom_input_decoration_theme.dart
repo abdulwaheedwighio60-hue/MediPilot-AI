@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:med_pilot_ai/core/constants/app_colors.dart';
 
 
@@ -13,9 +14,9 @@ class CustomInputDecorationTheme {
     filled: true,
     fillColor: AppColors.lightSurface,
 
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 18,
-      vertical: 18,
+    contentPadding:  EdgeInsets.symmetric(
+      horizontal: 13.w,
+      vertical: 15.h,
     ),
 
     hintStyle: const TextStyle(
